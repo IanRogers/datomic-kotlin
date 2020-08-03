@@ -9,7 +9,7 @@ TODO upgrade to prev & succ
 TODO upgrade to take a max path length
 TODO upgrade to yield all paths of the same length
 */
-fun <N> shortestPath(start: N, end: N, neighbors: (N) -> Iterable<N>): Seq<N> {
+fun <N> shortestPath(start: N, end: N, neighbors: (N) -> Iterable<N>): Seq<N>? {
     val seenitstart = mutableMapOf(start to Seq.of(start))
     val seenitend = mutableMapOf(end to Seq.of(end));
     val qs = LinkedList(listOf(start))
@@ -45,5 +45,5 @@ fun <N> shortestPath(start: N, end: N, neighbors: (N) -> Iterable<N>): Seq<N> {
         if (path != null) return path // found a path, we're done
     }
 
-    return Seq.empty() // never found a path...
+    return null // never found a path...
 }

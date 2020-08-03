@@ -6,6 +6,7 @@ import clojure.lang.Symbol
 import clojure.lang.Var
 import datomic.Database
 import datomic.Datom
+import datomic.Util
 
 
 val REQUIRE: Var = RT.`var`("clojure.core", "require")
@@ -16,11 +17,18 @@ val DATOMS: Var by lazy {
 
 typealias EntityID = Long
 typealias Value = Any
+typealias QRet = Iterable<Iterable<Any>>
 
-fun keyword(name: String) : Keyword = RT.keyword(null as String?, name)
+
+fun keyword(name: String) : Keyword {
+    val kw = Util.read(name)
+    if (kw !is Keyword) {
+        throw Exception("name $name didn't produce a keyword $kw ($kw.javaClass.kotlin)")
+    }
+    return kw as Keyword
+}
 
 enum class Index(val kw: Any) {
-    // why does Database.EAVT et al type these as "Object"? ugh :-(
     EAVT(Database.EAVT),
     AEVT(Database.AEVT),
     AVET(Database.AVET),
@@ -44,5 +52,5 @@ fun datoms(db:Database, index:Index, v1:Value) = DATOMS.invoke(db, index.kw, v1)
 fun datoms(db:Database, index:Index, v1:Value, v2:Value) = DATOMS.invoke(db, index.kw, v1, v2).asIterableDatoms()
 fun datoms(db:Database, index:Index, v1:Value, v2:Value, v3:Value) = DATOMS.invoke(db, index.kw, v1, v2, v3).asIterableDatoms()
 
-fun getValue(db:Database, id:EntityID, attr:Any) = datoms(db, Index.EAVT, id, attr).map {it.v()}.firstOrNull()
+fun getValue(db:Database, id:EntityID, attr:Keyword) = datoms(db, Index.EAVT, id, attr).map {it.v()}.firstOrNull()
 

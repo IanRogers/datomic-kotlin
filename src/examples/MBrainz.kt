@@ -2,11 +2,10 @@ package com.iprcom
 
 import datomic.Database
 import datomic.Peer
-import datomic.Util
 
-val TRACK_ARTISTS = Util.read(":track/artists")
-val ARTIST_NAME = Util.read(":artist/name")
-val TRACK_NAME = Util.read(":track/name")
+val TRACK_ARTISTS = keyword(":track/artists")
+val ARTIST_NAME = keyword(":artist/name")
+val TRACK_NAME = keyword(":track/name")
 
 object MBrainz {
 
@@ -18,6 +17,10 @@ object MBrainz {
     fun at_neighbors(db: Database, id: EntityID) = artists(db, id).ifEmpty { tracks(db, id) }
     // What is then name value of an item (track or artist)
     fun item_name(db: Database, id: EntityID) = getValue(db, id, ARTIST_NAME) ?: getValue(db, id, TRACK_NAME)
+
+    @JvmStatic
+    fun datalog_sp(db: Database, start: EntityID, finish: EntityID) : Iterable<Any>?
+            = shortestPath(start, finish, {at_neighbors(db, it)})
 
     @JvmStatic
     fun main(args: Array<String>) {
@@ -34,7 +37,32 @@ object MBrainz {
 
         val path = shortestPath(george_harrison, yvette_mimieux, {at_neighbors(db, it)})
         println(path)
-        println(path.map {item_name(db, it)})
+        println(path!!.map {item_name(db, it)})
+
+        println("put the shortest path and the top'n'tail into a single query")
+        val ret = Peer.q(
+                """[:find ?path :in $ ?start ?finish :where 
+                        [?se :artist/name ?start]
+                        [?sf :artist/name ?finish]
+                        [(com.iprcom.MBrainz/datalog_sp $ ?se ?sf) ?path]
+                        ]""",
+                db, "George Harrison", "Yvette Mimieux")
+        println(ret)
+        // clojure API swallows the type of everything :-(
+        val path2 = ret as Iterable<Iterable<Iterable<Any>>>
+        println(path2.first().first().map {item_name(db, it as EntityID)})
+
+        println("Try Yoko Ono to Yvette Mimieux")
+        val yo = artist_id("Yoko Ono")
+        println("Yoko Ono: " + yo)
+        println(Peer.q(
+                """[:find ?path :in $ ?start ?finish :where 
+                        [?se :artist/name ?start]
+                        [?sf :artist/name ?finish]
+                        [(com.iprcom.MBrainz/datalog_sp $ ?se ?sf) ?path]
+                        ]""",
+                db, "Yoko Ono", "Yvette Mimieux"))
+        println("The result [] means that the datalog query failed, i.e. there's no path")
     }
 
 }
