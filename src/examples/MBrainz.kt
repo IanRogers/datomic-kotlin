@@ -20,7 +20,7 @@ object MBrainz {
 
     @JvmStatic
     fun datalog_sp(db: Database, start: EntityID, finish: EntityID) : Iterable<Any>?
-            = shortestPath(start, finish, {at_neighbors(db, it)})
+            = shortestPath(start, finish, {at_neighbors(db, it)}, {at_neighbors(db, it)})
 
     @JvmStatic
     fun main(args: Array<String>) {
@@ -35,7 +35,7 @@ object MBrainz {
         println("George Harrison: $george_harrison")
         println("Yvette Mimieux: $yvette_mimieux")
 
-        val path = shortestPath(george_harrison, yvette_mimieux, {at_neighbors(db, it)})
+        val path = shortestPath(george_harrison, yvette_mimieux, {at_neighbors(db, it)}, {at_neighbors(db, it)})
         println(path)
         println(path!!.map {item_name(db, it)})
 
