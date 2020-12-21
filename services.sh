@@ -7,9 +7,10 @@ DATOMIC=$PARENT/datomic-pro-1.0.6165
 
 K=${1:-myaccesskey}
 S=${2:-mysecret}
-DB=${3:-hello}
+# DB=${3:-hello}
+DB=${3:-imdb}
 
-$DATOMIC/bin/transactor $PARENT/datomics-transactor.properties &
+$DATOMIC/bin/transactor -Xmx2g $PARENT/datomics-transactor.properties &
 
 $DATOMIC/bin/run -m datomic.peer-server -h localhost -p 8998 -a $K,$S -d $DB,datomic:dev://localhost:4334/$DB &
 

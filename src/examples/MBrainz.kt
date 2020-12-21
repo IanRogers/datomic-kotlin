@@ -49,7 +49,7 @@ object MBrainz {
                 db, "George Harrison", "Yvette Mimieux")
         println(ret)
         // clojure API swallows the type of everything :-(
-        val path2 = ret as Iterable<Iterable<Iterable<Any>>>
+        val path2 = ret as QRet
         println(path2.first().first().map {item_name(db, it as EntityID)})
 
         println("Try Yoko Ono to Yvette Mimieux")
